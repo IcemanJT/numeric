@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 # numpy.linalg.solve() solution:
 
@@ -26,6 +27,7 @@ import numpy as np
 #  0.1309302  0.1942768 ]
 
 
+# ----------- Solving a) ----------- #
 def seidel(a, x, b, precision, max_it):
     # dimension of matrix A
     dim = len(a)
@@ -57,13 +59,37 @@ def seidel(a, x, b, precision, max_it):
         it += 1
 
     return x, x_norm
+# ----------- Solving a) ----------- #
 
 
+# ----------- Solving b) ----------- #
+def conjured_gradients(matrix, x1, iterations):
+    x0 = np.zeros(n)
+    r0 = e - np.dot(matrix, x0)
+    p0 = r0
+    it = 0
+    x_norm = []
+    while it < iterations:
+        ap = np.dot(matrix, p0)
+        alpha = np.dot(r0, r0) / np.dot(p0, ap)
+        x1 = x0 + alpha * p0
+        r1 = r0 - alpha * ap
+        x_norm.append(np.linalg.norm(r1))
+        if np.linalg.norm(r1) < epsilon:
+            break
+        beta = np.dot(r1, r1) / np.dot(r0, r0)
+        p1 = r1 + beta * p0
+        x0, r0, p0 = x1, r1, p1
 
+        it += 1
+
+    return x1, x_norm
+# ----------- Solving b) ----------- #
 
 
 if __name__ == "__main__":
 
+    # ----------- Preps ----------- #
     # Define the size of the matrix
     n = 128
 
@@ -86,10 +112,35 @@ if __name__ == "__main__":
     # precision
     epsilon = 1e-8
 
+    # ----------- Preps ----------- #
+
+    # ----------- Solving a) ----------- #
     # result for a)
     result_a = np.zeros(n)
 
     # solves
-    result_a, norm = seidel(A, result_a, e, epsilon, 42)
+    result_a, norm_a = seidel(A, result_a, e, epsilon, 42)
+    # ----------- Solving a) ----------- #
 
+    # ----------- Solving b) ----------- #
+    result_b = np.zeros(n)
 
+    result_b, norm_b = conjured_gradients(A, result_b, 42)
+    # ----------- Solving b) ----------- #
+
+    # plotting
+    x_1 = np.arange(0, int(len(norm_a)))
+    x_2 = np.arange(0, int(len(norm_b)))
+    y1 = norm_a
+    y2 = norm_b
+
+    ax = plt.gca()
+    ax.set_ylim([0, 0.0001])
+    plt.title("Line graph")
+    plt.xlabel("X: iteration number")
+    plt.ylabel("Y: divergence")
+    plt.plot(x_1, y1, color="green")
+    plt.plot(x_2, y2, color="red")
+    plt.grid()
+    plt.tight_layout()
+    plt.show()
